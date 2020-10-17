@@ -429,7 +429,37 @@ class Checkers:
         board[old_i][old_j] = "---"
         board[new_i][new_j] = letter + str(new_i) + str(new_j)
 
+
     def play(self):
+
+        self.mandatory_jumping = False
+
+        while True:
+            self.print_matrix()
+            if self.current_turn is True:
+                print(ansi_cyan + "\nPlayer's turn." + ansi_reset)
+                self.get_player_input()
+            else:
+                print(ansi_cyan + "Computer's turn." + ansi_reset)
+                print("Thinking...")
+                self.evaluate_states()
+            if self.player_pieces == 0:
+                self.print_matrix()
+                print(ansi_red + "You have no pieces left.\nYOU LOSE!" + ansi_reset)
+                exit()
+            elif self.computer_pieces == 0:
+                self.print_matrix()
+                print(ansi_green + "Computer has no pieces left.\nYOU WIN!" + ansi_reset)
+                exit()
+            elif self.computer_pieces - self.player_pieces == 7:
+                wish = input("You have 7 pieces fewer than your opponent.Do you want to surrender?")
+                if wish == "" or wish == "yes":
+                    print(ansi_cyan + "Coward." + ansi_reset)
+                    exit()
+            self.current_turn = not self.current_turn
+
+
+    def original_play(self):
         print(ansi_cyan + "##### WELCOME TO CHECKERS ####" + ansi_reset)
         print("\nSome basic rules:")
         print("1.You enter the coordinates in the form i,j.")
