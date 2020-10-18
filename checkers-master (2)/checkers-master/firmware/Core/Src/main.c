@@ -28,6 +28,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -98,6 +99,26 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  /*
+  double L1 = 5.0;
+  double L2 = 4.0;
+  double px = 1.0;
+  double py = 1.0;
+  double r = sqrt(px * px + py * py);
+  if ((r <= L1 - L2) && (r >= L1 + L2)) {
+	  return -1;
+  }
+  double a = L1;
+  double b = L2;
+  double d = 5.0;
+  double c = sqrt(r * r + d * d);
+  double th1 = 0;
+  double th2 = 0;
+  double th1a = atan2(py, px);
+  double th1b = atan2(py, px);
+  double th2a = 2 * atan(sqrt(((a + b) * (a + b) - c * c) / (c * c - (a - b) * (a - b))));
+  double th2b = -2 * atan(sqrt(((a + b) * (a + b) - c * c) / (c * c - (a - b) * (a - b))));
+  */
   TIM_OC_InitTypeDef sConfigOC;
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
@@ -105,28 +126,100 @@ int main(void)
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
   sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
-  sConfigOC.Pulse = 1000;
-  HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_1);
-  sConfigOC.Pulse = 1000;
-  HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_2);
-  sConfigOC.Pulse = 1000;
-  HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_3);
-  sConfigOC.Pulse = 1000;
-  HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_4);
-  int direction = 1;
-  int pulse = 500;
+  double thA[4] = {
+		  0.0,
+		  83.0,
+		  142.0, /* lim */
+		  99.0
+  };
+  double thB[4] = {
+		  100.0,
+		  83.0,
+		  142.0, /* lim */
+		  99.0
+  };
+  double thC[4] = {
+		  100.0,
+		  85.0,
+		  145.0, /* lim */
+		  54.0
+  };
+
+  double thD[4] = {
+		  0.0,
+		  85.0,
+		  145.0, /* lim */
+		  54.0
+  };
+  double thE[4] = {
+		  0.0,
+		  85.0,
+		  100.0, /* lim */
+		  54.0
+  };
+
+  double thF[4] = {
+		  0.0,
+		  83.0,
+		  100.0, /* lim */
+		  99.0
+  };
+  /* 120 */
+  /* th1 = 105 th2 = 85, th3 = 145, th4 = 90*/
+  /* th1 = 110 th2 = 80, th3 = 145, th4 = 125*/
+  double min_pulse[4] = {
+		  50, 50, 50, 50
+  };
+  int count = 0;
   while (1)
   {
-	  sConfigOC.Pulse = pulse;
-	  HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_1);
-	  HAL_TIM_PWM_Init(&htim1);
-	  HAL_TIM_PWM_Start_IT(&htim1, TIM_CHANNEL_1);
-	  if (pulse == 0 || pulse == 1000) {
-		  direction *= -1;
-	  }
-	  pulse += direction;
-	  HAL_Delay(1);
+	  uint32_t pulse[4];
+	  uint32_t channels[4] = {
+			  TIM_CHANNEL_1,
+			  TIM_CHANNEL_2,
+			  TIM_CHANNEL_3,
+			  TIM_CHANNEL_4
+	  };
+	  for (int i = 0; i < 4; i++) {
+		  if ((count / 2) % 6 == 0) {
+			  pulse[i] = (uint32_t)((220.0 - 50.0) * thA[i] / 180.0 + 50.0);
+			  sConfigOC.Pulse = pulse[i];
+			  HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, channels[i]);
+		  }
+		  if ((count / 2) % 6 == 1) {
+			  pulse[i] = (uint32_t)((220.0 - 50.0) * thB[i] / 180.0 + 50.0);
+			  sConfigOC.Pulse = pulse[i];
+			  HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, channels[i]);
+		  }
+		  if ((count / 2) % 6 == 2) {
+			  pulse[i] = (uint32_t)((220.0 - 50.0) * thC[i] / 180.0 + 50.0);
+			  sConfigOC.Pulse = pulse[i];
+			  HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, channels[i]);
+		  }
+		  if ((count / 2) % 6 == 3) {
+			  pulse[i] = (uint32_t)((220.0 - 50.0) * thD[i] / 180.0 + 50.0);
+			  sConfigOC.Pulse = pulse[i];
+			  HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, channels[i]);
+		  }
+		  if ((count / 2) % 6 == 4) {
+			  pulse[i] = (uint32_t)((220.0 - 50.0) * thE[i] / 180.0 + 50.0);
+			  sConfigOC.Pulse = pulse[i];
+			  HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, channels[i]);
+		  }
 
+		  if ((count / 2) % 6 == 5) {
+			  pulse[i] = (uint32_t)((220.0 - 50.0) * thF[i] / 180.0 + 50.0);
+			  sConfigOC.Pulse = pulse[i];
+			  HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, channels[i]);
+		  }
+	  }
+	  HAL_TIM_PWM_Init(&htim1);
+	  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+	  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
+	  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
+	  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
+	  HAL_Delay(1000);
+	  count++;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
